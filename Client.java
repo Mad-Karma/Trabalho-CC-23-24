@@ -30,6 +30,11 @@ public class Client {
                 String input = scanner.nextLine();
 
                 if (input.equalsIgnoreCase("q")) {
+                    //Messagem de disconect 
+                    String disconectMessage = socket.getLocalAddress().toString();
+                    byte[] messageBytes = disconectMessage.getBytes(StandardCharsets.UTF_8);
+                    outputStream.write(messageBytes);
+                    outputStream.flush();
                     break;
                 }
 
