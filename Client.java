@@ -15,18 +15,23 @@ public class Client {
 
             System.out.println("Connected to server.");
 
+            //ter IP e enviar ao server
+            String clientIp = socket.getLocalAddress().toString();
+            byte[] bytesToSend = clientIp.getBytes(StandardCharsets.UTF_8);
+            outputStream.write(bytesToSend);
+            outputStream.flush();
+
+
+            //consola de cliente para pedir ficheiros (A FAZER)
             Scanner scanner = new Scanner(System.in);
             while (true) {
-                System.out.println("Enter a string to send (q to quit):");
+                System.out.println("q to quit:");
                 String input = scanner.nextLine();
 
                 if (input.equalsIgnoreCase("q")) {
                     break;
                 }
 
-                byte[] bytesToSend = input.getBytes(StandardCharsets.UTF_8);
-                outputStream.write(bytesToSend);
-                outputStream.flush();
             }
 
             System.out.println("Closing connection.");
