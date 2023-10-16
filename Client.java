@@ -17,7 +17,8 @@ public class Client {
 
             //ter IP e enviar ao server
             String clientIp = socket.getLocalAddress().toString();
-            byte[] bytesToSend = clientIp.getBytes(StandardCharsets.UTF_8);
+            String message = clientIp + ";" + "1" + ";" + "file1" + ";" + "file2";
+            byte[] bytesToSend = message.getBytes(StandardCharsets.UTF_8);
             outputStream.write(bytesToSend);
             outputStream.flush();
 
