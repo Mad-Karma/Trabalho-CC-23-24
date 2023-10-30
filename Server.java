@@ -1,16 +1,9 @@
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class Server {
 
@@ -33,7 +26,7 @@ public class Server {
                 System.out.println("[DEBUG] Client connected: " + clientSocket);
 
                 // Start a new thread to handle the client
-                executorService.execute(new ClientHandler(clientSocket));
+                executorService.execute(new ClientHandler(clientSocket, clientFilesMap));
             }
 
             executorService.shutdown();
@@ -84,9 +77,11 @@ public class Server {
 
     public static class ClientHandler implements Runnable {
         private Socket clientSocket;
+        private Map<String, List<String>> clientFilesMap;
 
-        public ClientHandler(Socket clientSocket) {
+        public ClientHandler(Socket clientSocket, Map<String, List<String>> clientFilesMap) {
             this.clientSocket = clientSocket;
+            this.clientFilesMap = clientFilesMap;
         }
 
         @Override
@@ -94,7 +89,7 @@ public class Server {
             try {
                 InputStream inputStream = clientSocket.getInputStream();
                 OutputStream outputStream = clientSocket.getOutputStream();
-                
+
                 byte[] buffer = new byte[1024];
                 int bytesRead;
 
@@ -113,8 +108,10 @@ public class Server {
 
                     if (requestType.equals("1")) {
                         List<String> files = new ArrayList<>();
-                        for (int i = 2; i < parts.length; i++) {
-                            files.add(parts[i]);
+                        String[] fileswithsize = requestInfo.split(":");
+                        for (String file : fileswithsize) {
+                            String[] filesName = file.split("!");
+                            files.add(filesName[0]);
                         }
                         clientFilesMap.put(ip, files);
                         System.out.println("Received files for IP " + ip + ": " + files);
@@ -128,12 +125,20 @@ public class Server {
 
                             // Check if the client has the requested file
                             if (clientFiles.contains(requestInfoToFind)) {
-                                String message = "Client IP: " + clientIP + " has the requested file: " + requestInfoToFind;
+                                String message = "\n Client IP: " + clientIP + " has the requested file: " + requestInfoToFind + "\n";
+                                byte[] bytesToSend = message.getBytes(StandardCharsets.UTF_8);
+                                outputStream.write(bytesToSend);
+                                outputStream.flush();
+                            } else {
+                                String message = "\n There's no file with the name. \n";
                                 byte[] bytesToSend = message.getBytes(StandardCharsets.UTF_8);
                                 outputStream.write(bytesToSend);
                                 outputStream.flush();
                             }
                         }
+                    }
+                    if (requestType.equals("3")) {
+
                     }
                 }
 

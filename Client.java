@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 public class Client {
 
-    private static final String SERVER_ADDRESS = "127.0.0.1"; // Server IP address
+    private static final String SERVER_ADDRESS = "127.00.00.01"; // Server IP address
     private static final int SERVER_PORT = 9090; // Server port
 
     public static void main(String[] args) {
@@ -22,7 +22,13 @@ public class Client {
             // Get the client IP
             String clientIp = socket.getInetAddress().getHostAddress();
 
-            String message = "1" + ";" + clientIp + ";" + "file1" + ";" + "file2";
+            // RT ; IP ; Payload ?
+            // RT -> Request Type = 1 byte
+            // IP = 15 bytes
+            // Payload -> File_name ! nº_blocks : File_name ! nº_blocks
+            // ? -> Delimitador Final 
+
+            String message = "1" + ";" + clientIp + ";" + "file1" + "!" + "10" + ":" + "file2" + "!" + "20";
             byte[] ack = message.getBytes(StandardCharsets.UTF_8);
             outputStream.write(ack);
             outputStream.flush();
