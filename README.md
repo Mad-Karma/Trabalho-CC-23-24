@@ -22,4 +22,4 @@ Payload -> File_name ! nº_blocks : File_name ! nº_blocks
 ? -> Delimitador Final
 <br>
 <br>
-Tamanhos (com delimitadores) : 1 + 1 + 15 + 1 + 1007 + 1
+Tamanhos (com delimitadores) : 1 + 1 + 15 + 1 + 1007 + 1 = 1024 bytes
