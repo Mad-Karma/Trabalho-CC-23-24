@@ -70,6 +70,7 @@ public class Server {
                 e.printStackTrace();
             }
         }
+        scanner.close();
     }
 
     private static void displayClientFiles() {
