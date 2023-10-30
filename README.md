@@ -7,11 +7,10 @@ Tarefas:<br>
 - Cliente ler ficheiros e enviar a lista de ficheiros que possui (ao enviar a mensagem, o primeiro caracter tem de ser !, para identificar que é o inicio de uma mensagem)
 
 <br>
-# Request Type 1
 
+## Request Type 1
 <br>
 <br>
-
 RT ; IP ; Payload ?
 <br>
 RT -> Request Type = 1 byte
@@ -21,7 +20,6 @@ IP = 15 bytes
 Payload -> File_name ! nº_blocks : File_name ! nº_blocks 
 <br>
 ? -> Delimitador Final
-
 <br>
 <br>
 Tamanhos (com delimitadores) : 1 + 1 + 15 + 1 + 1007 + 1
