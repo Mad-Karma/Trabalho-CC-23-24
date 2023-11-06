@@ -4,6 +4,11 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.net.Socket;
 import java.util.Scanner;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 
 public class Client {
 
@@ -12,6 +17,7 @@ public class Client {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        String message;
 
         try (Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
                 InputStream inputStream = socket.getInputStream();
@@ -28,10 +34,45 @@ public class Client {
             // Payload -> File_name ! nº_blocks : File_name ! nº_blocks
             // ? -> Delimitador Final 
 
-            String message = "1" + ";" + clientIp + ";" + "file1" + "!" + "10" + ":" + "file2" + "!" + "20";
-            byte[] ack = message.getBytes(StandardCharsets.UTF_8);
-            outputStream.write(ack);
-            outputStream.flush();
+
+            // Parser-------------------------------------------------------------
+            StringBuilder messageBuilder = new StringBuilder();
+            messageBuilder.append("1").append(";").append(clientIp).append(";");
+
+            File clientFilesFolder = new File("ClientFiles");
+            File[] files = clientFilesFolder.listFiles();
+
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        String fileName = file.getName();
+                        Path path = Paths.get("./ClientFiles/" + fileName);
+                        long fileSize = Files.size(path);
+                        int numBlocks;
+                        if(fileSize % 1007 == 0){
+                            numBlocks = (int) (fileSize / 1007);
+                        }else{
+                            numBlocks = ((int) (fileSize / 1007)) + 1;
+                        }
+
+                        messageBuilder.append(fileName).append("!").append(numBlocks).append(":");
+                    }
+                }
+
+                messageBuilder.deleteCharAt(messageBuilder.length() - 1);
+
+                message = messageBuilder.toString();
+
+                System.out.println(message);
+
+                byte[] ack = message.getBytes(StandardCharsets.UTF_8);
+                outputStream.write(ack);
+                outputStream.flush();
+
+            } else {
+                System.out.println("No files found in the 'ClientFiles' folder.");
+            }
+            // -------------------------------------------------------------
 
             // Start a loop to allow the user to choose options
             while (true) {
