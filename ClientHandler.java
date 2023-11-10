@@ -6,10 +6,13 @@ import java.util.*;
 public class ClientHandler implements Runnable {
     private Socket clientSocket;
     private Map<String, List<String>> clientFilesMap;
+    private Map<String, List<String>> clientBlockFilesMap;
 
-    public ClientHandler(Socket clientSocket, Map<String, List<String>> clientFilesMap) {
+    public ClientHandler(Socket clientSocket, Map<String, List<String>> clientFilesMap,
+            Map<String, List<String>> clientBlockFilesMap) {
         this.clientSocket = clientSocket;
         this.clientFilesMap = clientFilesMap;
+        this.clientBlockFilesMap = clientBlockFilesMap;
     }
 
     @Override
@@ -42,9 +45,13 @@ public class ClientHandler implements Runnable {
                         files.add(filesName[0]);
                     }
                     clientFilesMap.put(ip, files);
+                    // debug
                     System.out.println("Received files for IP " + ip + ": " + files);
                 }
                 if (requestType.equals("2")) {
+
+                }
+                if (requestType.equals("3")) {
                     String requestInfoToFind = requestInfo; // Request info to find
 
                     for (Map.Entry<String, List<String>> entry : clientFilesMap.entrySet()) {
@@ -53,7 +60,8 @@ public class ClientHandler implements Runnable {
 
                         // Check if the client has the requested file
                         if (clientFiles.contains(requestInfoToFind)) {
-                            String message = "\n Client IP: " + clientIP + " has the requested file: " + requestInfoToFind + "\n";
+                            String message = "\n Client IP: " + clientIP + " has the requested file: "
+                                    + requestInfoToFind + "\n";
                             byte[] bytesToSend = message.getBytes(StandardCharsets.UTF_8);
                             outputStream.write(bytesToSend);
                             outputStream.flush();
@@ -64,8 +72,9 @@ public class ClientHandler implements Runnable {
                             outputStream.flush();
                         }
                     }
+
                 }
-                if (requestType.equals("3")) {
+                if (requestType.equals("4")) {
 
                 }
             }

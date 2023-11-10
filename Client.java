@@ -37,14 +37,17 @@ public class Client {
 
             // Parser-------------------------------------------------------------
             StringBuilder messageBuilder = new StringBuilder();
+            StringBuilder messageBuilderBlocks = new StringBuilder();
             messageBuilder.append("1").append(";").append(clientIp).append(";");
+            messageBuilderBlocks.append("4").append(";").append(clientIp).append(";");
 
             File clientFilesFolder = new File("ClientFiles");
             File[] files = clientFilesFolder.listFiles();
 
             if (files != null) {
                 for (File file : files) {
-                    if (file.isFile()) {
+                    //checks if file name contains »« so it considers them as a block of a file
+                    if (file.isFile() && !file.getName().contains("»«")) {
                         String fileName = file.getName();
                         Path path = Paths.get("./ClientFiles/" + fileName);
                         long fileSize = Files.size(path);
@@ -57,16 +60,30 @@ public class Client {
 
                         messageBuilder.append(fileName).append("!").append(numBlocks).append(":");
                     }
+                    else{
+                        String fileName = file.getName();
+                        messageBuilderBlocks.append(fileName).append("|");
+                    }
                 }
 
                 messageBuilder.deleteCharAt(messageBuilder.length() - 1);
 
                 message = messageBuilder.toString();
 
+                //debug
                 System.out.println(message);
 
                 byte[] ack = message.getBytes(StandardCharsets.UTF_8);
                 outputStream.write(ack);
+                outputStream.flush();
+
+                message = messageBuilderBlocks.toString();
+
+                //debug
+                System.out.println(message);
+
+                byte[] ack2 = message.getBytes(StandardCharsets.UTF_8);
+                outputStream.write(ack2);
                 outputStream.flush();
 
             } else {
@@ -87,7 +104,7 @@ public class Client {
                 if (choice == 1) {
                     System.out.println("Enter the file name:");
                     String file = scanner.nextLine();
-                    message = "2" + ";" + clientIp + ";" + file;
+                    message = "3" + ";" + clientIp + ";" + file;
                     byte[] userRequestBytes = message.getBytes(StandardCharsets.UTF_8);
                     outputStream.write(userRequestBytes);
                     outputStream.flush();

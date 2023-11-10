@@ -1,5 +1,4 @@
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
@@ -10,6 +9,7 @@ public class Server {
     private static final int PORT = 9090;
     private static volatile boolean isRunning = true;
     private static Map<String, List<String>> clientFilesMap = new HashMap<>();
+    private static Map<String, List<String>> clientBlockFilesMap = new HashMap<>();
 
     public static void main(String[] args) {
         ExecutorService executorService = Executors.newCachedThreadPool();
@@ -26,7 +26,7 @@ public class Server {
                 System.out.println("[DEBUG] Client connected: " + clientSocket);
 
                 // Start a new thread to handle the client
-                executorService.execute(new ClientHandler(clientSocket, clientFilesMap));
+                executorService.execute(new ClientHandler(clientSocket, clientFilesMap, clientBlockFilesMap));
             }
 
             executorService.shutdown();
