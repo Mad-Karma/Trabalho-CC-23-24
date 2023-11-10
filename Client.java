@@ -47,7 +47,7 @@ public class Client {
             if (files != null) {
                 for (File file : files) {
                     //checks if file name contains »« so it considers them as a block of a file
-                    if (file.isFile() && !file.getName().contains("»«")) {
+                    if (file.isFile() && !file.getName().contains("«")) {
                         String fileName = file.getName();
                         Path path = Paths.get("./ClientFiles/" + fileName);
                         long fileSize = Files.size(path);
