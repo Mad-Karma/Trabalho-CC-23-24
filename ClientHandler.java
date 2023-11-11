@@ -80,6 +80,11 @@ public class ClientHandler implements Runnable {
                 // info request
                 // Inside the run() method where requestType 3 is handled
                 if (requestType.equals("3")) {
+                    //reroute the transfer
+                    
+                }
+
+                if (requestType.equals("4")) {
                     String requestInfoToFind = requestInfo; // Request info to find
 
                     for (Map.Entry<String, List<String>> entry : clientFilesMap.entrySet()) {
@@ -114,9 +119,6 @@ public class ClientHandler implements Runnable {
                             outputStream.flush();
                         }
                     }
-                }
-
-                if (requestType.equals("4")) {
 
                 }
             }
