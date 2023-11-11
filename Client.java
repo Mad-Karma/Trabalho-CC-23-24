@@ -37,7 +37,7 @@ public class Client {
             StringBuilder messageBuilder = new StringBuilder();
             StringBuilder messageBuilderBlocks = new StringBuilder();
             messageBuilder.append("1").append(";").append(clientIp).append(";");
-            messageBuilderBlocks.append("4").append(";").append(clientIp).append(";");
+            messageBuilderBlocks.append("2").append(";").append(clientIp).append(";");
 
             File clientFilesFolder = new File("ClientFiles");
             File[] files = clientFilesFolder.listFiles();
