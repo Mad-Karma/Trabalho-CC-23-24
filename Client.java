@@ -34,8 +34,6 @@ public class Client {
             // Payload -> File_name ! nº_blocks : File_name ! nº_blocks
             // ? -> Delimitador Final 
 
-
-            // Parser-------------------------------------------------------------
             StringBuilder messageBuilder = new StringBuilder();
             StringBuilder messageBuilderBlocks = new StringBuilder();
             messageBuilder.append("1").append(";").append(clientIp).append(";");
@@ -44,6 +42,34 @@ public class Client {
             File clientFilesFolder = new File("ClientFiles");
             File[] files = clientFilesFolder.listFiles();
 
+
+            // Fragmentação dos ficheiros em blocos
+
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile() && !file.getName().contains("«")) {
+                        String fileName = file.getName();
+                        String path = "./ClientFiles/" + fileName;
+                        Path pathFile = Paths.get("./ClientFiles/" + fileName);
+                        long fileSize = Files.size(pathFile);
+
+                        int numBlocks;
+                        if (fileSize % 1007 == 0) {
+                            numBlocks = (int) (fileSize / 1007);
+                        } else {
+                            numBlocks = ((int) (fileSize / 1007)) + 1;
+                        }
+
+                        int blocksNumber = Methods.fileSplitter(fileName, path, numBlocks);
+                        System.out
+                                .println("O ficheiro " + fileName + " foi fragmentado em " + blocksNumber + " blocos");
+
+                    }
+                }
+            }
+
+            // -------------------------------------------------------------
+            // Parse and send the client's files to the server
             if (files != null) {
                 for (File file : files) {
                     //checks if file name contains »« so it considers them as a block of a file

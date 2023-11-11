@@ -67,11 +67,30 @@ public class Server {
     }
 
     private static void displayClientFiles() {
-        System.out.println("\n\n#################\n# Client Files: #\n#################\n");
+        System.out.println("\n\n#################\n# Client Files and Blocks: #\n#################\n");
         for (Map.Entry<String, List<String>> entry : clientFilesMap.entrySet()) {
             System.out.println("Client: " + entry.getKey());
             System.out.println("Files: " + entry.getValue());
+
+            // Retrieve blocks associated with the files
+            List<String> blocks = new ArrayList<>();
+            for (String file : entry.getValue()) {
+                List<String> fileBlocks = clientBlockFilesMap.get(file);
+                if (fileBlocks != null) {
+                    blocks.add("File: " + file + " Blocks: " + fileBlocks);
+                }
+            }
+
+            if (!blocks.isEmpty()) {
+                System.out.println("Blocks:");
+                for (String blockInfo : blocks) {
+                    System.out.println(blockInfo);
+                }
+            } else {
+                System.out.println("No blocks information available.");
+            }
             System.out.println("--------");
         }
     }
+
 }

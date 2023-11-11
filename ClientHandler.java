@@ -7,6 +7,8 @@ public class ClientHandler implements Runnable {
     private Socket clientSocket;
     private Map<String, List<String>> clientFilesMap;
     private Map<String, List<String>> clientBlockFilesMap;
+    List<String> files = new ArrayList<>();
+    List<String> blocks = new ArrayList<>();
 
     public ClientHandler(Socket clientSocket, Map<String, List<String>> clientFilesMap,
             Map<String, List<String>> clientBlockFilesMap) {
@@ -37,8 +39,8 @@ public class ClientHandler implements Runnable {
                 String ip = parts[1];
                 String requestInfo = parts[2];
 
+                // files
                 if (requestType.equals("1")) {
-                    List<String> files = new ArrayList<>();
                     String[] fileswithsize = requestInfo.split(":");
                     for (String file : fileswithsize) {
                         String[] filesName = file.split("!");
@@ -48,9 +50,13 @@ public class ClientHandler implements Runnable {
                     // debug
                     System.out.println("Received files for IP " + ip + ": " + files);
                 }
+
                 if (requestType.equals("2")) {
 
                 }
+
+                // info request
+                // Inside the run() method where requestType 3 is handled
                 if (requestType.equals("3")) {
                     String requestInfoToFind = requestInfo; // Request info to find
 
@@ -60,22 +66,59 @@ public class ClientHandler implements Runnable {
 
                         // Check if the client has the requested file
                         if (clientFiles.contains(requestInfoToFind)) {
-                            String message = "\n Client IP: " + clientIP + " has the requested file: "
-                                    + requestInfoToFind + "\n";
+                            // Get the blocks associated with the requested file
+                            List<String> fileBlocks = clientBlockFilesMap.get(requestInfoToFind);
+                            String message;
+
+                            if (fileBlocks != null && !fileBlocks.isEmpty()) {
+                                // Prepare a message with file blocks information
+                                message = "\nClient IP: " + clientIP + " has the requested file: " + requestInfoToFind
+                                        + "\n";
+                                message += "Blocks: " + fileBlocks + "\n";
+                            } else {
+                                message = "\nClient IP: " + clientIP
+                                        + " has the requested file but no associated blocks info available: "
+                                        + requestInfoToFind + "\n";
+                            }
+
+                            // Send the message containing file existence and blocks info to the client
                             byte[] bytesToSend = message.getBytes(StandardCharsets.UTF_8);
                             outputStream.write(bytesToSend);
                             outputStream.flush();
                         } else {
-                            String message = "\n There's no file with the name. \n";
+                            String message = "\nThere's no file with the name: " + requestInfoToFind + "\n";
                             byte[] bytesToSend = message.getBytes(StandardCharsets.UTF_8);
                             outputStream.write(bytesToSend);
                             outputStream.flush();
                         }
                     }
-
                 }
-                if (requestType.equals("4")) {
 
+                // blocks
+                // Inside the run() method where requestType 4 is handled
+                if (requestType.equals("4")) {
+                    String[] blockInfo = requestInfo.split("\\|");
+
+                    for (String block : blockInfo) {
+                        String[] blockParts = block.split("«");
+                        String fileName = blockParts[0];
+                        String blockNumber = blockParts[1];
+
+                        // Check if the file already exists in the map, if not, create a new entry
+                        if (!clientBlockFilesMap.containsKey(fileName)) {
+                            clientBlockFilesMap.put(fileName, new ArrayList<>());
+                        }
+
+                        // Get the blocks associated with the file and add the new block
+                        List<String> blocks = clientBlockFilesMap.get(fileName);
+                        blocks.add(blockNumber);
+
+                        // Update the block information for this file
+                        clientBlockFilesMap.put(fileName, blocks);
+                    }
+
+                    // debug
+                    System.out.println("Received blocks information for IP " + ip + ": " + clientBlockFilesMap);
                 }
             }
 
