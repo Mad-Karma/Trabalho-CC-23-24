@@ -4,6 +4,9 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.net.Socket;
 import java.util.Scanner;
+
+import Client.Mediator;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,7 +16,7 @@ import pack.FMethods;
 
 public class Client {
 
-    private static final String SERVER_ADDRESS = "127.00.00.01"; // Server IP address
+    private static final String SERVER_ADDRESS = "127.000.000.001"; // Server IP address
     private static final int SERVER_PORT = 9090; // Server port
 
     public static void main(String[] args) {
@@ -113,6 +116,10 @@ public class Client {
             } else {
                 System.out.println("No files found in the 'ClientFiles' folder.");
             }
+
+            // Create a thread for the Mediator functionality
+            Thread mediatorThread = new Thread(new Mediator(inputStream));
+            mediatorThread.start(); // Start the thread
             // -------------------------------------------------------------
 
             // Start a loop to allow the user to choose options
@@ -133,14 +140,14 @@ public class Client {
                     outputStream.write(userRequestBytes);
                     outputStream.flush();
 
-                    // Read and display the server's response
-                    byte[] responseBuffer = new byte[1024];
-                    int bytesRead = inputStream.read(responseBuffer);
+                    // // Read and display the server's response
+                    // byte[] responseBuffer = new byte[1024];
+                    // int bytesRead = inputStream.read(responseBuffer);
 
-                    if (bytesRead > 0) {
-                        String response = new String(responseBuffer, 0, bytesRead, StandardCharsets.UTF_8);
-                        System.out.println(response);
-                    }
+                    // if (bytesRead > 0) {
+                    //     String response = new String(responseBuffer, 0, bytesRead, StandardCharsets.UTF_8);
+                    //     System.out.println(response);
+                    // }
                 } else if (choice == 2) {
                     // Add code for file download option
                 } else if (choice == 3) {
