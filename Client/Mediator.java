@@ -30,14 +30,18 @@ public class Mediator implements Runnable {
                     //message from server
                     if (firstByte.equals("1")) {
                         String receivedData = new String(buffer, 2, bytesRead, StandardCharsets.UTF_8);
+                        Thread.sleep(100);
 
-                                System.out.println("Message from Server: " + receivedData);
-
+                        System.out.println("Message from Server: " + receivedData);
+                        } 
+                        
                         //request for file
-                        } else if (firstByte.equals("2")) {
-                            //creates worker thread
+                        else if (firstByte.equals("2")) {
+                        //creates worker thread
                         }
-                    } else {
+
+                    } 
+                    else {
                         System.out.println("Invalid header format.");
                     }
                 }
