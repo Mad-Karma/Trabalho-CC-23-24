@@ -99,10 +99,10 @@ public class ClientHandler implements Runnable {
 
                             if (fileBlocks != null && !fileBlocks.isEmpty()) {
                                 // Prepare a message with file blocks information
-                                message = "1;" + "\nClient IP: " + clientIP + " has the requested file: " + requestInfoToFind + "\n";
+                                message = "1;" + "Client IP: " + clientIP + " has the requested file: " + requestInfoToFind + "\n";
                                 message += "Blocks: " + fileBlocks + "\n";
                             } else {
-                                message = "1;" + "\nClient IP: " + clientIP + " has the requested file but no associated blocks info available: " + requestInfoToFind + "\n";
+                                message = "1;" + "Client IP: " + clientIP + " has the requested file but no associated blocks info available: " + requestInfoToFind + "\n";
                             }
 
                             // Send the message containing file existence and blocks info to the client
@@ -110,7 +110,7 @@ public class ClientHandler implements Runnable {
                             outputStream.write(bytesToSend);
                             outputStream.flush();
                         } else {
-                            String message = "\nThere's no file with the name: " + requestInfoToFind + "\n";
+                            String message = "There's no file with the name: " + requestInfoToFind + "\n";
                             byte[] bytesToSend = message.getBytes(StandardCharsets.UTF_8);
                             outputStream.write(bytesToSend);
                             outputStream.flush();
