@@ -99,13 +99,10 @@ public class ClientHandler implements Runnable {
 
                             if (fileBlocks != null && !fileBlocks.isEmpty()) {
                                 // Prepare a message with file blocks information
-                                message = "\nClient IP: " + clientIP + " has the requested file: " + requestInfoToFind
-                                        + "\n";
+                                message = "1;" + "\nClient IP: " + clientIP + " has the requested file: " + requestInfoToFind + "\n";
                                 message += "Blocks: " + fileBlocks + "\n";
                             } else {
-                                message = "\nClient IP: " + clientIP
-                                        + " has the requested file but no associated blocks info available: "
-                                        + requestInfoToFind + "\n";
+                                message = "1;" + "\nClient IP: " + clientIP + " has the requested file but no associated blocks info available: " + requestInfoToFind + "\n";
                             }
 
                             // Send the message containing file existence and blocks info to the client

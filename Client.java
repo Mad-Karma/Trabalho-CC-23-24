@@ -139,15 +139,6 @@ public class Client {
                     byte[] userRequestBytes = message.getBytes(StandardCharsets.UTF_8);
                     outputStream.write(userRequestBytes);
                     outputStream.flush();
-
-                    // // Read and display the server's response
-                    // byte[] responseBuffer = new byte[1024];
-                    // int bytesRead = inputStream.read(responseBuffer);
-
-                    // if (bytesRead > 0) {
-                    //     String response = new String(responseBuffer, 0, bytesRead, StandardCharsets.UTF_8);
-                    //     System.out.println(response);
-                    // }
                 } else if (choice == 2) {
                     // Add code for file download option
                 } else if (choice == 3) {
