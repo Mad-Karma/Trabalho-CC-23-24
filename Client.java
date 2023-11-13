@@ -72,6 +72,7 @@ public class Client {
 
             // -------------------------------------------------------------
             // Parse and send the client's files to the server
+            files = clientFilesFolder.listFiles();
             if (files != null) {
                 for (File file : files) {
                     // checks if file name contains »« so it considers them as a block of a file
