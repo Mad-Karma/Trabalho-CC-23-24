@@ -142,6 +142,12 @@ public class Client {
                     outputStream.flush();
                 } else if (choice == 2) {
                     // Add code for file download option
+                    System.out.println("Enter the file name:");
+                    String file = scanner.nextLine();
+                    message = "3" + ";" + clientIp + ";" + file;
+                    byte[] userRequestBytes = message.getBytes(StandardCharsets.UTF_8);
+                    outputStream.write(userRequestBytes);
+                    outputStream.flush();
                 } else if (choice == 3) {
                     break;
                 } else {
