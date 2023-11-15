@@ -3,8 +3,8 @@
 Tarefas Feitas:<br>
 ✔️ Mensagem de Disconnect <br>
 ✔️ Servidor ler a lista a partir do socket e guardar essa informação associada ao cliente respetivo <br>
-✔️ Identificar cada cliente através do seu IP (de forma a aparecer cliente1, cliente2, ...)
-✔️ Cliente ler ficheiros e enviar a lista de ficheiros que possui (ao enviar a mensagem, o primeiro caracter tem de ser !, para identificar que é o inicio de uma mensagem)
+✔️ Identificar cada cliente através do seu IP (de forma a aparecer cliente1, cliente2, ...)<br>
+✔️ Cliente ler ficheiros e enviar a lista de ficheiros que possui (ao enviar a mensagem, o primeiro caracter tem de ser !, para identificar que é o inicio de uma mensagem)<br>
 ✔️Server identificar blocos em vez de ficheiros ao receber <br>
 ✔️Cliente receber ficheiro e ler em bytes <br>
 ✔️Dividir ficheiro em blocos de 1007 bytes (bloco é identificado por »« i.e. : file1t.txt»«1 para o bloco 1) e guardar na pasta <br>
