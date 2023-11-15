@@ -16,7 +16,7 @@ import pack.FMethods;
 
 public class Client {
 
-    private static final String SERVER_ADDRESS = "127.000.000.001"; // Server IP address
+    private static final String SERVER_ADDRESS = "10.0.0.10"; // Server IP address
     private static final int SERVER_PORT = 9090; // Server port
 
     public static void main(String[] args) {
@@ -31,6 +31,7 @@ public class Client {
 
             // Get the client IP
             String clientIp = socket.getInetAddress().getHostAddress();
+            clientIp = FMethods.transformToFullIP(clientIp);
 
             // RT ; IP ; Payload ?
             // RT -> Request Type = 1 byte
