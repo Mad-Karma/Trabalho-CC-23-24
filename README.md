@@ -24,11 +24,14 @@ To-Do: <br>
 -Em caso de disconnect do cliente limpar ficheiros do server para n tentar aceder depois na procura de bloco <br>
 -No final tirar prints de debugs <br>
 
-
-
-## Request Type 1
+## TCP
 <br>
 <br>
+
+### Request Type 1 (Server)
+<br>
+<br>
+
 RT ; IP ; Payload ?
 <br>
 RT -> Request Type = 1 byte
@@ -42,8 +45,26 @@ Payload -> File_name ! nº_blocks : File_name ! nº_blocks
 <br>
 Tamanhos (com delimitadores) : 1 + 1 + 15 + 1 + 1007 + 1 = 1024 bytes
 
+### Request Type 2 (Server)
 
-## UDP Datagram
+### Request Type 3 (Server)
 
-RT IP FileName Hash Payload
-1 + 15 + 30 + 16 + 962
+### Request Type 4 (Server)
+
+### Request Type 1 (Server)
+
+### Request Type 2 (Server)
+
+
+## UDP 
+<br>
+<br>
+### Request Type 1 (Receive File) 
+<br>
+RT IP FileName Hash Payload <br> 
+1 + 15 + 30 + 16 + 962 <br>
+
+### Request Type 2 (Send File)
+<br>
+RT IP FileName <br>
+1 + 15 + 30
