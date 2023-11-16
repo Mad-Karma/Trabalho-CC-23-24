@@ -46,20 +46,27 @@ Payload -> File_name ! nº_blocks : File_name ! nº_blocks
 Tamanhos (com delimitadores) : 1 + 1 + 15 + 1 + 1007 + 1 = 1024 bytes
 
 ### Request Type 2 (Server)
+<br>
 
 ### Request Type 3 (Server)
+<br>
 
 ### Request Type 4 (Server)
+<br>
 
 ### Request Type 1 (Server)
+<br>
 
 ### Request Type 2 (Server)
+<br>
 
 
 ## UDP 
 <br>
 <br>
+
 ### Request Type 1 (Receive File) 
+
 <br>
 RT IP FileName Hash Payload <br> 
 1 + 15 + 30 + 16 + 962 <br>
