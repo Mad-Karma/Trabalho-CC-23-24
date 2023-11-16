@@ -88,18 +88,18 @@ public class Mediator implements Runnable {
                         // Now clientsWithBlocks contains the IP addresses and their associated blocks
                         System.out.println("Blocks Information Updated: " + clientsWithBlocks);
 
-                        // Join all clientsWithBlocks in a string and convert them to bytes after
-                        // prepending "1;"
-
                         // Test change later
+                        //__________________________________________________________________________________
                         String IP = "010.000.000.002";
+                        String SenderIP = "010.000.000.001";
                         // transform IP to inet address
-                        java.net.InetAddress Inetip = java.net.InetAddress.getByName(IP);
-                        String blockName = "boda.txt«0001";
-                        String toReceive = "2" + ";" + IP + ";" + blockName;
+                        java.net.InetAddress Inetip = java.net.InetAddress.getByName(SenderIP);
+                        String blockName = "diogo.txt«0001";
+                        //__________________________________________________________________________________
 
+                        // Send the IP address and block name to the other node
+                        String toReceive = "2" + IP + blockName;
                         byte[] receive = toReceive.getBytes(StandardCharsets.UTF_8);
-
                         // send message to other node to start up the sending process
                         DatagramPacket packet = new DatagramPacket(receive, receive.length, Inetip, 9090);
                         udpSocket.send(packet);
