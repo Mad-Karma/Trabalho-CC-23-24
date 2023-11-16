@@ -54,10 +54,10 @@ Tamanhos (com delimitadores) : 1 + 1 + 15 + 1 + 1007 + 1 = 1024 bytes
 ### Request Type 4 (Server)
 <br>
 
-### Request Type 1 (Server)
+### Request Type 1 (Cliente)
 <br>
 
-### Request Type 2 (Server)
+### Request Type 2 (Cliente)
 <br>
 
 
