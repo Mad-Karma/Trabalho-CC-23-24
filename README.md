@@ -24,6 +24,7 @@ To-Do: <br>
 -Em caso de disconnect do cliente limpar ficheiros do server para n tentar aceder depois na procura de bloco <br>
 -No final tirar prints de debugs <br>
 
+____________________________________________________________________________________
 ## TCP
 <br>
 <br>
@@ -60,7 +61,7 @@ Tamanhos (com delimitadores) : 1 + 1 + 15 + 1 + 1007 + 1 = 1024 bytes
 ### Request Type 2 (Cliente)
 <br>
 
-
+____________________________________________________________________________________
 ## UDP 
 <br>
 <br>
