@@ -24,8 +24,8 @@ public class Client {
         String message;
 
         try (Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
-                InputStream inputStream = socket.getInputStream();
-                OutputStream outputStream = socket.getOutputStream()) {
+             InputStream inputStream = socket.getInputStream();
+             OutputStream outputStream = socket.getOutputStream()) {
 
             System.out.println("Connected to server.");
 
@@ -51,7 +51,7 @@ public class Client {
 
             if (files != null) {
                 for (File file : files) {
-                    if (file.isFile() && !file.getName().contains("«")) {
+                    if (file.isFile()) {
                         String fileName = file.getName();
                         String path = "./ClientFiles/" + fileName;
                         Path pathFile = Paths.get("./ClientFiles/" + fileName);
@@ -67,54 +67,37 @@ public class Client {
                         int blocksNumber = FMethods.fileSplitter(fileName, path, numBlocks);
                         System.out.println("O ficheiro " + fileName + " foi fragmentado em " + blocksNumber + " blocos");
 
-                    }
-                }
-            }
-
-            // -------------------------------------------------------------
-            // Parse and send the client's files to the server
-            files = clientFilesFolder.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    // checks if file name contains »« so it considers them as a block of a file
-                    if (file.isFile() && !file.getName().contains("«")) {
-                        String fileName = file.getName();
-                        Path path = Paths.get("./ClientFiles/" + fileName);
-                        long fileSize = Files.size(path);
-                        int numBlocks;
-                        if (fileSize % 962 == 0) {
-                            numBlocks = (int) (fileSize / 958);
+                        // Append to the appropriate message builder
+                        if (!fileName.contains("«")) {
+                            messageBuilder.append(fileName).append("!").append(numBlocks).append(":");
                         } else {
-                            numBlocks = ((int) (fileSize / 958)) + 1;
+                            messageBuilderBlocks.append(fileName).append("|");
                         }
-
-                        messageBuilder.append(fileName).append("!").append(numBlocks).append(":");
-                    } else {
-                        String fileName = file.getName();
-                        messageBuilderBlocks.append(fileName).append("|");
                     }
                 }
 
-                messageBuilder.deleteCharAt(messageBuilder.length() - 1);
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.deleteCharAt(messageBuilder.length() - 1);
+                    message = messageBuilder.toString();
 
-                message = messageBuilder.toString();
+                    // debug
+                    System.out.println(message);
 
-                // debug
-                System.out.println(message);
+                    byte[] ack = message.getBytes(StandardCharsets.UTF_8);
+                    outputStream.write(ack);
+                    outputStream.flush();
+                }
 
-                byte[] ack = message.getBytes(StandardCharsets.UTF_8);
-                outputStream.write(ack);
-                outputStream.flush();
+                if (messageBuilderBlocks.length() > 0) {
+                    message = messageBuilderBlocks.toString();
 
-                message = messageBuilderBlocks.toString();
+                    // debug
+                    System.out.println(message);
 
-                // debug
-                System.out.println(message);
-
-                byte[] ack2 = message.getBytes(StandardCharsets.UTF_8);
-                outputStream.write(ack2);
-                outputStream.flush();
-
+                    byte[] ack2 = message.getBytes(StandardCharsets.UTF_8);
+                    outputStream.write(ack2);
+                    outputStream.flush();
+                }
             } else {
                 System.out.println("No files found in the 'ClientFiles' folder.");
             }
