@@ -13,6 +13,7 @@ import java.util.Map;
 public class Mediator implements Runnable {
     private InputStream clientInput;
     private DatagramSocket udpSocket;
+    private Thread udpWorkerThread;
 
     public Mediator(InputStream clientInputStream) {
         this.clientInput = clientInputStream;
@@ -30,21 +31,21 @@ public class Mediator implements Runnable {
             System.out.println("Mediator is listening...");
 
             // Create a worker thread to handle UDP reception
-            new Thread(() -> {
+            udpWorkerThread = new Thread(() -> {
                 while (true) {
                     try {
                         byte[] udpBuffer = new byte[1024];
                         DatagramPacket udpPacket = new DatagramPacket(udpBuffer, udpBuffer.length);
                         udpSocket.receive(udpPacket);
 
-                        // Create a new worker thread for each UDP connection
-                        Thread udpWorkerThread = new Thread(new Worker(udpPacket.getData()));
-                        udpWorkerThread.start();
+                        // Pass UDP data directly to Worker class
+                        new Worker(udpPacket.getData()).run();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-            }).start();
+            });
+            udpWorkerThread.start();
 
             while (true) {
                 byte[] buffer = new byte[1024];
@@ -71,7 +72,7 @@ public class Mediator implements Runnable {
                         Map<String, List<String>> clientsWithBlocks = new HashMap<>();
 
                         for (String block : blocks) {
-                            String[] blockInfo = block.split("/");
+                            String[] blockInfo = block.split("//");
                             if (blockInfo.length == 2) {
                                 String blockNumber = blockInfo[0];
                                 String ipAddress = blockInfo[1]; // Extracting IP address
@@ -84,24 +85,56 @@ public class Mediator implements Runnable {
                         // Now clientsWithBlocks contains the IP addresses and their associated blocks
                         System.out.println("Blocks Information Updated: " + clientsWithBlocks);
 
+
+
+                        // Iterate clients with blocks to get all the IP's that have and  send a request 3 to those addresses
+
+                        
                         // Test change later to get the IP address of the best nodes to download each block
                         // Iterate to send the best for each block
                         //__________________________________________________________________________________
                         String IP = "010.000.000.002";
-                        String SenderIP = "010.000.000.001";
-                        // transform IP to inet address
-                        java.net.InetAddress Inetip = java.net.InetAddress.getByName(SenderIP);
                         String blockName = "diogo.txt«0001";
                         //__________________________________________________________________________________
 
+                        // choose best IP
+                                                
+                        long minTripTime = 100000;
+                        String SenderIP = "010.000.000.001";
+                        java.net.InetAddress Inetip;
+
+                        for (Map.Entry<String, List<String>> entry : clientsWithBlocks.entrySet()) {
+                            String key = entry.getKey();
+                            List<String> value = entry.getValue();
+                            System.out.println("Key: " + key + " Value: " + value);
+
+                            String toReceive = "3" + IP + key;
+                            Inetip = java.net.InetAddress.getByName(key);
+                            byte[] receive = toReceive.getBytes(StandardCharsets.UTF_8);
+                            DatagramPacket packet = new DatagramPacket(receive, receive.length, Inetip, 9090);
+                            udpSocket.send(packet);
+
+                            Thread.sleep(100);
+
+                            // Access the tripTime value immediately after sending the datagram
+                            long tripTime = Worker.getTripTime();
+                            System.out.println("Round-trip time received in Mediator: " + tripTime + " milliseconds");
+
+                            // Update the minimum trip time and corresponding IP
+                            if (tripTime < minTripTime) {
+                                minTripTime = tripTime;
+                                SenderIP = key;
+                            }
+                        }
                         // Send the IP address and block name to the other node
                         String toReceive = "2" + IP + blockName;
                         byte[] receive = toReceive.getBytes(StandardCharsets.UTF_8);
                         // Send message to other node to start up the sending process
+                        Inetip = java.net.InetAddress.getByName(SenderIP);
                         DatagramPacket packet = new DatagramPacket(receive, receive.length, Inetip, 9090);
                         udpSocket.send(packet);
                         //__________________________________________________________________________________
-                        
+
                     } else {
                         System.out.println("Invalid header format.");
                     }
