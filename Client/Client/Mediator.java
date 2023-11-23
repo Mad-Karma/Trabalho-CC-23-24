@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import CPackage.FileMethods;
 import CPackage.GenericMethods;
 
 public class Mediator implements Runnable {
@@ -70,11 +71,14 @@ public class Mediator implements Runnable {
                         String[] data = receivedData.split("%");
                         String fileName = data[1];
                         String myIP = data[2];
+                        String totalBlocksString = data[3];
+                        totalBlocksString = totalBlocksString.replaceAll("\n", "");
+                        int totalBlocks = Integer.parseInt(totalBlocksString);
                         String[] blocks = data[0].split("\\|");
                         Map<String, List<String>> clientsWithBlocks = new HashMap<>();
 
                         for (String block : blocks) {
-                            String[] blockInfo = block.split("//");
+                            String[] blockInfo = block.split("/");
                             if (blockInfo.length == 2) {
                                 String blockNumber = blockInfo[0];
                                 String ipAddress = blockInfo[1]; // Extracting IP address
@@ -115,7 +119,7 @@ public class Mediator implements Runnable {
                                 DatagramPacket packet = new DatagramPacket(receive, receive.length, inetAddress, 9090);
                                 udpSocket.send(packet);
 
-                                Thread.sleep(200);
+                                Thread.sleep(50);
 
                                 // Access the tripTime value immediately after sending the datagram
                                 long tripTime = Worker.getTripTime();
@@ -137,7 +141,9 @@ public class Mediator implements Runnable {
                             DatagramPacket packet = new DatagramPacket(receive, receive.length, Inetip, 9090);
                             udpSocket.send(packet);
                         }
-                        // __________________________________________________________________________________
+
+                        // Count if there's all the blocks then recreate the file
+                        FileMethods.recreateFile(fileName, totalBlocks);
 
                     } else {
                         System.out.println("Invalid header format.");
