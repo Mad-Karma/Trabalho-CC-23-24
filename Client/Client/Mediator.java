@@ -73,6 +73,10 @@ public class Mediator implements Runnable {
                         String myIP = data[2];
                         String totalBlocksString = data[3];
                         totalBlocksString = totalBlocksString.replaceAll("\n", "");
+                        if (totalBlocksString.equals("")) {
+                            System.out.println("File can't be downloaded because there's not enough info on the server.");
+                            continue;
+                        }
                         int totalBlocks = Integer.parseInt(totalBlocksString);
                         String[] blocks = data[0].split("\\|");
                         Map<String, List<String>> clientsWithBlocks = new HashMap<>();
@@ -105,6 +109,7 @@ public class Mediator implements Runnable {
                         for (Map.Entry<String, List<String>> blockEntry : clientsWithBlocks.entrySet()) {
                             String blockNumber = blockEntry.getKey();
                             List<String> ipAddresses = blockEntry.getValue();
+                            senderIP = ipAddresses.get(0);
 
                             // Send request to each IP that has the block
                             for (String ipAddress : ipAddresses) {
@@ -142,6 +147,7 @@ public class Mediator implements Runnable {
                             udpSocket.send(packet);
                         }
 
+                        Thread.sleep(200);
                         // Count if there's all the blocks then recreate the file
                         FileMethods.recreateFile(fileName, totalBlocks);
 
