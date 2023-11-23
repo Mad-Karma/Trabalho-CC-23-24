@@ -135,8 +135,14 @@ public class ClientHandler implements Runnable {
                     }
                 }
             }
-            // Delete all the info of clientsWithBlocks from that IP 
-            clientFilesMap.remove(ip);
+            // Delete all the info of clientBlockFilesMap from that IP
+            final String finalIp = ip;
+            clientBlockFilesMap.values().forEach(blocksList -> blocksList.removeIf(block -> block.endsWith("/" + finalIp)));
+            clientBlockFilesMap.entrySet().removeIf(entry -> entry.getValue().isEmpty());
+            System.out.println("Updated clientBlockFilesMap: " + clientBlockFilesMap);
+
+            clientSocket.close();
+            
             clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
