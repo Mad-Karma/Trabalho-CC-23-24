@@ -25,6 +25,7 @@ public class ClientHandler implements Runnable {
 
             byte[] buffer = new byte[1024];
             int bytesRead;
+            String ip = "";
 
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 String receivedString = new String(buffer, 0, bytesRead, StandardCharsets.UTF_8);
@@ -36,7 +37,7 @@ public class ClientHandler implements Runnable {
                 }
 
                 String requestType = parts[0];
-                String ip = parts[1];
+                ip = parts[1];
                 String requestInfo = parts[2];
                 ip = transformToFullIP(ip);
 
@@ -134,6 +135,8 @@ public class ClientHandler implements Runnable {
                     }
                 }
             }
+            // Delete all the info of clientsWithBlocks from that IP 
+            clientFilesMap.remove(ip);
             clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
