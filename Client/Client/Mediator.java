@@ -2,6 +2,7 @@ package Client;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.charset.StandardCharsets;
@@ -15,6 +16,7 @@ import CPackage.UDPMethods;
 
 public class Mediator implements Runnable {
     private InputStream clientInput;
+    private OutputStream outputStream;
     private DatagramSocket udpSocket;
     private Thread udpWorkerThread;
 
@@ -68,6 +70,7 @@ public class Mediator implements Runnable {
                         String receivedData = new String(buffer, 2, bytesRead - 2, StandardCharsets.UTF_8);
                         int tries = 0;
                         boolean tryAgain = true;
+                        Map<String, Long> averageSpeeds = new HashMap<>();
 
                         // Parse blocks to update the list of people with blocks
                         System.out.println("Received blocks information: " + receivedData);
@@ -77,7 +80,8 @@ public class Mediator implements Runnable {
                         String totalBlocksString = data[3];
                         totalBlocksString = totalBlocksString.replaceAll("\n", "");
                         if (totalBlocksString.equals("")) {
-                            System.out.println("File can't be downloaded because there's not enough info on the server.");
+                            System.out
+                                    .println("File can't be downloaded because there's not enough info on the server.");
                             continue;
                         }
                         int totalBlocks = Integer.parseInt(totalBlocksString);
@@ -97,31 +101,33 @@ public class Mediator implements Runnable {
 
                         System.out.println("Blocks Information Updated: " + clientsWithBlocks);
 
-                        // remove the first char in myIP
-                        System.out.println("My IP before transforming: " + myIP);
-                        myIP = myIP.substring(1);
-                        System.out.println("My IP after transforming: " + myIP);
-
-                        while (tries < 5 && tryAgain == true) {
+                        while (tries < 10 && tryAgain == true) {
                             tryAgain = false;
-                            tries++;
+
+                            // Check all the download speeds and choose the fastest one
+                            averageSpeeds = UDPMethods.calculateAverageTripTime(myIP, fileName, clientsWithBlocks, udpSocket);
+                            Thread.sleep(2000);
+                            System.out.println("Average speeds: " + averageSpeeds);
+
                             if (tries != 0) {
                                 System.out.println("Download failed, retrying to download the file...\n");
                             }
 
-                            tryAgain = UDPMethods.DownloadStart(myIP, fileName, clientsWithBlocks, udpSocket);
-                            
+                            tryAgain = UDPMethods.DownloadStart(myIP, fileName, clientsWithBlocks, averageSpeeds, udpSocket);
+
                             if (!tryAgain) {
                                 tryAgain = !FileMethods.recreateFile(fileName, totalBlocks);
-                            } 
-                            
-                            if(tryAgain && tries == 5){
+                            }
+
+                            if (tryAgain && tries == 5) {
                                 System.out.println("Download failed, maximum number of tries reached.\n");
                             }
 
+                            tries++;
                         }
 
-                        Thread.sleep(100);
+                        FileMethods.fragmentAndSendInfo(myIP, outputStream);
+
                     } else {
                         System.out.println("Invalid header format.");
                     }

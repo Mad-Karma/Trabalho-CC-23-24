@@ -13,26 +13,96 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import Client.Worker;
 
 public class UDPMethods {
 
-    public static Boolean DownloadStart(String myIP, String fileName, Map<String, List<String>> clientsWithBlocks, DatagramSocket udpSocket) throws InterruptedException, IOException {
-        long minTripTime = 100000;
-        String senderIP = "010.000.000.001";
-        String toReceive;
+    public static Map<String, Long> calculateAverageTripTime(String myIP, String fileName,
+            Map<String, List<String>> clientsWithBlocks, DatagramSocket udpSocket)
+            throws IOException, InterruptedException {
+        Map<String, Long> averageSpeeds = new HashMap<>();
+
+        // Find all unique IPs present in the map
+        Set<String> uniqueIPs = clientsWithBlocks.values()
+                .stream()
+                .flatMap(List::stream)
+                .collect(Collectors.toSet());
+
+        for (String ipAddress : uniqueIPs) {
+            System.out.println("Calculating average round-trip time to IP: " + ipAddress);
+
+            Worker.setConnection(false);
+
+            myIP = GenericMethods.transformToFullIP(myIP);
+            ipAddress = GenericMethods.transformToFullIP(ipAddress);
+            String toReceive = "3" + myIP + ipAddress;
+            toReceive = toReceive.replaceAll("\n", "");
+
+            InetAddress inetAddress = InetAddress.getByName(ipAddress);
+            byte[] receive = toReceive.getBytes(StandardCharsets.UTF_8);
+
+            List<Long> tripTimes = new ArrayList<>();
+
+            // Send three requests for each unique IP and store the trip times
+            for (int i = 0; i < 3; i++) {
+                DatagramPacket packet = new DatagramPacket(receive, receive.length, inetAddress, 9090);
+                udpSocket.send(packet);
+
+                Thread.sleep(100);
+
+                long tripTime = Worker.getTripTime();
+                Boolean connection = Worker.getConnection();
+                System.out.println("Round-trip time received in Mediator: " + tripTime + " milliseconds");
+
+                // Check if the connection is false, and skip adding to averageSpeeds
+                if (connection == false) {
+                    System.out.println("Connection failed");
+                    break;
+                }
+
+                tripTimes.add(tripTime);
+            }
+
+            // Calculate the average speed for the current IP
+            if (!tripTimes.isEmpty()) {
+                long averageSpeed = calculateAverageSpeed(tripTimes);
+
+                // Update the average speed for the current IP
+                averageSpeeds.put(ipAddress, averageSpeed);
+            }
+        }
+
+        return averageSpeeds;
+    }
+
+
+    // Helper method to calculate the average speed based on a list of trip times
+    private static long calculateAverageSpeed(List<Long> tripTimes) {
+        long totalTripTime = 0;
+
+        for (long tripTime : tripTimes) {
+            totalTripTime += tripTime;
+        }
+
+        // Assuming each trip time contributes to the average
+        return tripTimes.isEmpty() ? 0 : totalTripTime / tripTimes.size();
+    }
+
+    public static Boolean DownloadStart(String myIP, String fileName, Map<String, List<String>> clientsWithBlocks, Map<String, Long> averageSpeeds, DatagramSocket udpSocket) throws InterruptedException, IOException {
         Boolean success = true;
         Boolean tryAgain = false;
 
         // Iterate through the map to send a request to each block number
         for (Map.Entry<String, List<String>> blockEntry : clientsWithBlocks.entrySet()) {
             String blockNumber = blockEntry.getKey();
-            List<String> ipAddresses = blockEntry.getValue();
-            senderIP = ipAddresses.get(0);
 
             // Check if the block already exists in the Blocks folder
             String blockFileName = fileName + "«" + blockNumber;
@@ -41,47 +111,50 @@ public class UDPMethods {
                 continue;
             }
 
-            // Send request to each IP that has the block
-            for (String ipAddress : ipAddresses) {
-                System.out.println("Sending request to IP: " + ipAddress);
-                myIP = GenericMethods.transformToFullIP(myIP);
-                ipAddress = GenericMethods.transformToFullIP(ipAddress);
-                toReceive = "3" + myIP + ipAddress;
-                // remove all /n from toReceive
-                toReceive = toReceive.replaceAll("\n", "");
-                InetAddress inetAddress = InetAddress.getByName(ipAddress);
-                byte[] receive = toReceive.getBytes(StandardCharsets.UTF_8);
-                DatagramPacket packet = new DatagramPacket(receive, receive.length, inetAddress, 9090);
-                udpSocket.send(packet);
+            // Find IPs associated with the current block
+            List<String> ipAddresses = blockEntry.getValue();
 
-                Thread.sleep(50);
-
-                // Access the tripTime value immediately after sending the datagram
-                long tripTime = Worker.getTripTime();
-                System.out.println("Round-trip time received in Mediator: " + tripTime + " milliseconds");
-
-                // Update the minimum trip time and corresponding IP
-                if (tripTime < minTripTime) {
-                    minTripTime = tripTime;
-                    senderIP = ipAddress;
-                }
-            }
+            // Find the IP with the lowest average speed among IPs that have the current
+            // block
+            String senderIP = findLowestAverageSpeedIP(ipAddresses, averageSpeeds);
 
             // Send the IP address and block name to the other node
             String blockName = fileName + "«" + blockNumber;
-            toReceive = "2" + myIP + blockName;
+            String toReceive = "2" + myIP + blockName;
             byte[] receive = toReceive.getBytes(StandardCharsets.UTF_8);
 
             InetAddress Inetip = InetAddress.getByName(senderIP);
             DatagramPacket packet = new DatagramPacket(receive, receive.length, Inetip, 9090);
             udpSocket.send(packet);
-            
+
             success = Worker.getSuccess();
             if (success == false) {
                 tryAgain = true;
             }
         }
+
+        Thread.sleep(1000);
         return tryAgain;
+    }
+
+    // Helper method to find the IP with the lowest average speed among the given
+    // IPs
+    private static String findLowestAverageSpeedIP(List<String> ipAddresses, Map<String, Long> averageSpeeds) {
+        long minAverageSpeed = Long.MAX_VALUE;
+        String senderIP = "010.000.000.001"; // Default value
+
+        for (String ipAddress : ipAddresses) {
+            // Update the minimum average speed and corresponding IP
+            if (averageSpeeds.containsKey(ipAddress)) {
+                long averageSpeed = averageSpeeds.get(ipAddress);
+                if (averageSpeed < minAverageSpeed) {
+                    minAverageSpeed = averageSpeed;
+                    senderIP = ipAddress;
+                }
+            }
+        }
+
+        return senderIP;
     }
 
     // Helper method to check if the block file already exists

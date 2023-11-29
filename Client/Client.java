@@ -11,7 +11,7 @@ import CPackage.*;
 
 public class Client {
 
-    private static final String SERVER_ADDRESS = "10.0.0.10"; // Server IP address
+    private static final String SERVER_ADDRESS = "10.3.3.1"; // Server IP address
     private static final int SERVER_PORT = 9090; // Server port
 
     public static void main(String[] args) {

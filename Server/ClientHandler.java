@@ -66,6 +66,9 @@ public class ClientHandler implements Runnable {
                 if (requestType.equals("2")) {
                     String[] blockInfo = requestInfo.split("\\|");
 
+                    // Remove existing entries associated with the current IP
+                    removeExistingEntriesForIP(ip);
+
                     for (String block : blockInfo) {
                         String[] blockParts = block.split("«");
                         String fileName = blockParts[0];
@@ -175,5 +178,10 @@ public class ClientHandler implements Runnable {
         }
 
         return fullIP.toString();
+    }
+
+    private void removeExistingEntriesForIP(String ip) {
+        clientBlockFilesMap.values().forEach(blocksList -> blocksList.removeIf(block -> block.endsWith("/" + ip)));
+        clientBlockFilesMap.entrySet().removeIf(entry -> entry.getValue().isEmpty());
     }
 }

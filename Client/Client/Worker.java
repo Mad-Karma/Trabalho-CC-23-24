@@ -10,6 +10,7 @@ public class Worker implements Runnable {
     byte[] hash;
     String ip, filePath;
     static Boolean success = true;
+    static Boolean connection = false;
 
     public Worker(byte[] buffer) {
         this.data = buffer;
@@ -38,6 +39,7 @@ public class Worker implements Runnable {
             case "4":
                 tripTime = UDPMethods.RTTResponse(data);
                 setTripTime(tripTime);
+                setConnection(true);
                 break;
             default:
                 System.out.println("Invalid byte.");
@@ -56,12 +58,22 @@ public class Worker implements Runnable {
     }
 
     // Method to set the success field
-    public void setSuccess(Boolean success) {
+    public static void setSuccess(Boolean success) {
         Worker.success = success;
     }
 
     // Method to get the success value
     public static Boolean getSuccess() {
         return success;
+    }
+
+    // Method to set the connection field
+    public static void setConnection(Boolean connection) {
+        Worker.connection = connection;
+    }
+
+    // Method to get the connection value
+    public static Boolean getConnection() {
+        return connection;
     }
 }
