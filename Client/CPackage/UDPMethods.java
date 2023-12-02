@@ -41,7 +41,6 @@ public class UDPMethods {
 
             Worker.setConnection(false);
 
-            myIP = GenericMethods.transformToFullIP(myIP);
             ipAddress = GenericMethods.transformToFullIP(ipAddress);
             String toReceive = "3" + myIP + ipAddress;
             toReceive = toReceive.replaceAll("\n", "");

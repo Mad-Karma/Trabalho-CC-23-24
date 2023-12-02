@@ -2,27 +2,29 @@ package Client;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 import CPackage.FileMethods;
+import CPackage.GenericMethods;
 import CPackage.UDPMethods;
 
 public class Mediator implements Runnable {
     private InputStream clientInput;
-    private OutputStream outputStream;
     private DatagramSocket udpSocket;
     private Thread udpWorkerThread;
+        private Semaphore requestSemaphore;
 
-    public Mediator(InputStream clientInputStream) {
+    public Mediator(InputStream clientInputStream, Semaphore requestSemaphore) {
         this.clientInput = clientInputStream;
-
+        this.requestSemaphore = requestSemaphore;
         try {
             this.udpSocket = new DatagramSocket(9090);
         } catch (IOException e) {
@@ -64,6 +66,7 @@ public class Mediator implements Runnable {
                         String receivedData = new String(buffer, 2, bytesRead - 2, StandardCharsets.UTF_8);
                         Thread.sleep(100);
                         System.out.println("Message from Server: " + receivedData);
+                        requestSemaphore.release();
 
                     } else if (firstByte.equals("2")) {
                         // Handle request type "2" - Update blocks information
@@ -76,12 +79,15 @@ public class Mediator implements Runnable {
                         System.out.println("Received blocks information: " + receivedData);
                         String[] data = receivedData.split("%");
                         String fileName = data[1];
-                        String myIP = data[2];
+                        String DNS = data[2];
+
+                        // Transform DNS to IP
+                        String myIP = GenericMethods.transformToFullIP(InetAddress.getByName(DNS).getHostAddress());
+
                         String totalBlocksString = data[3];
                         totalBlocksString = totalBlocksString.replaceAll("\n", "");
                         if (totalBlocksString.equals("")) {
-                            System.out
-                                    .println("File can't be downloaded because there's not enough info on the server.");
+                            System.out.println("File can't be downloaded because there's not enough info on the server.");
                             continue;
                         }
                         int totalBlocks = Integer.parseInt(totalBlocksString);
@@ -106,7 +112,7 @@ public class Mediator implements Runnable {
 
                             // Check all the download speeds and choose the fastest one
                             averageSpeeds = UDPMethods.calculateAverageTripTime(myIP, fileName, clientsWithBlocks, udpSocket);
-                            Thread.sleep(2000);
+                            Thread.sleep(3000);
                             System.out.println("Average speeds: " + averageSpeeds);
 
                             if (tries != 0) {
@@ -125,9 +131,7 @@ public class Mediator implements Runnable {
 
                             tries++;
                         }
-
-                        FileMethods.fragmentAndSendInfo(myIP, outputStream);
-
+                        requestSemaphore.release();
                     } else {
                         System.out.println("Invalid header format.");
                     }

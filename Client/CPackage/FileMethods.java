@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+
 public class FileMethods {
 
     public static int fileSplitter(String fileName, String filePath, int numBlocks) {
@@ -45,7 +46,7 @@ public class FileMethods {
         return -1;
     }
 
-    public static void fragmentAndSendInfo(String clientIp, OutputStream outputStream) throws IOException {
+    public static void fragmentAndSendInfo(OutputStream outputStream) throws IOException {
         StringBuilder messageBuilder = new StringBuilder();
         StringBuilder messageBuilderBlocks = new StringBuilder();
         String message;
@@ -79,10 +80,10 @@ public class FileMethods {
         // Send message for fragmentation
         if (messageBuilder.length() > 0) {
             messageBuilder.deleteCharAt(messageBuilder.length() - 1);
-            message = "1;" + clientIp + ";" + messageBuilder.toString();
+            message = "1;" + messageBuilder.toString() + "$";
             System.out.println(message); // debug
             byte[] ack = message.getBytes(StandardCharsets.UTF_8);
-            outputStream.write(ack);
+            outputStream.write(ack, 0, ack.length);
             outputStream.flush();
         }
 
@@ -90,20 +91,43 @@ public class FileMethods {
         File clientBlocksFolder = new File("Blocks");
         File[] blockFiles = clientBlocksFolder.listFiles();
 
+        // Counter for blocks sent
+        int blocksSent = 0;
+
         for (File blockFile : blockFiles) {
             if (blockFile.isFile() && blockFile.getName().contains("«")) {
                 // Handle files with '«' in their name for block information
                 messageBuilderBlocks.append(blockFile.getName()).append("|");
+
+                // Increment the counter
+                blocksSent++;
+
+                // If 10 blocks have been added to the message, send and reset the builder
+                if (blocksSent == 10) {
+                    // Send message for block information
+                    if (messageBuilderBlocks.length() > 0) {
+                        messageBuilderBlocks.deleteCharAt(messageBuilderBlocks.length() - 1);
+                        message = "2;" + messageBuilderBlocks.toString() + "$";
+                        System.out.println(message); // debug
+                        byte[] ack2 = message.getBytes(StandardCharsets.UTF_8);
+                        outputStream.write(ack2, 0, ack2.length);
+                        outputStream.flush();
+
+                        // Reset the builder and counter
+                        messageBuilderBlocks = new StringBuilder();
+                        blocksSent = 0;
+                    }
+                }
             }
         }
 
-        // Send message for block information
+        // Send the remaining blocks if any
         if (messageBuilderBlocks.length() > 0) {
             messageBuilderBlocks.deleteCharAt(messageBuilderBlocks.length() - 1);
-            message = "2;" + clientIp + ";" + messageBuilderBlocks.toString();
+            message = "2;" + messageBuilderBlocks.toString() + "$";
             System.out.println(message); // debug
             byte[] ack2 = message.getBytes(StandardCharsets.UTF_8);
-            outputStream.write(ack2);
+            outputStream.write(ack2, 0, ack2.length);
             outputStream.flush();
         }
 

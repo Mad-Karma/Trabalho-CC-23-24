@@ -17,7 +17,10 @@ public class Server {
         ExecutorService executorService = Executors.newCachedThreadPool();
 
         try (ServerSocket serverSocket = new ServerSocket(PORT, BACKLOG, InetAddress.getByName(getLocalIPAddress()))) {
-            System.out.println("Server listening on " + serverSocket.getInetAddress().getHostAddress() + " port " + PORT);
+
+            // Use IP to learn DNS 
+            String dnsName = serverSocket.getInetAddress().getHostName();
+            System.out.println("Server listening on " + dnsName + " port " + PORT);
 
             // Start a thread to handle the menu
             Thread menuThread = new Thread(Server::startMenu);
@@ -25,7 +28,9 @@ public class Server {
 
             while (isRunning) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("[DEBUG] Client connected: " + clientSocket);
+                // Print Client DNS 
+                String clientDns = clientSocket.getInetAddress().getHostName();
+                System.out.println("[DEBUG] Client connected: " + clientDns);
 
                 // Start a new thread to handle the client
                 executorService.execute(new ClientHandler(clientSocket, clientFilesMap, clientBlockFilesMap, FileBlockNumber));

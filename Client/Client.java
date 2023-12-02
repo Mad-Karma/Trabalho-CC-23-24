@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.Semaphore;
 
 import Client.Mediator;
 
@@ -11,11 +12,14 @@ import CPackage.*;
 
 public class Client {
 
-    private static final String SERVER_ADDRESS = "10.3.3.1"; // Server IP address
+    private static final String SERVER_ADDRESS = "Servidor1.cc23"; // Server IP address
     private static final int SERVER_PORT = 9090; // Server port
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         Scanner scanner = new Scanner(System.in);
+
+        Semaphore requestSemaphore = new Semaphore(0);
+
         try (Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
                 InputStream inputStream = socket.getInputStream();
                 OutputStream outputStream = socket.getOutputStream()) {
@@ -23,23 +27,26 @@ public class Client {
             System.out.println("Connected to server.");
 
             // Get the client IP
-            String clientIp = socket.getLocalAddress().getHostAddress();
-            clientIp = GenericMethods.transformToFullIP(clientIp);
-            System.out.println("Client IP: " + clientIp);
-
-
-            FileMethods.fragmentAndSendInfo(clientIp, outputStream);
+            String clientIp = socket.getLocalAddress().getHostName();
+            System.out.println("Client Name: " + clientIp);
 
             // Create a thread for the Mediator functionality
-            Thread mediatorThread = new Thread(new Mediator(inputStream));
+            Thread mediatorThread = new Thread(new Mediator(inputStream, requestSemaphore));
             mediatorThread.start(); // Start the thread
 
             // Start a loop to allow the user to choose options
-            while (true) {
-                System.out.println("Menu:");
+            while (true) {                
+                FileMethods.fragmentAndSendInfo(outputStream);
+                System.out.println("______________________________________________________\n");
+                System.out.println(
+                    "\n __________________"+
+                       "       Menu:      "+
+                       "__________________\n"
+                    );
                 System.out.println("1. Ask for a file location");
                 System.out.println("2. Download a file");
                 System.out.println("3. Exit");
+                System.out.println("______________________________________________________\n");
 
                 String message;
                 int choice = scanner.nextInt();
@@ -48,7 +55,7 @@ public class Client {
                 if (choice == 1) {
                     System.out.println("Enter the file name:");
                     String file = scanner.nextLine();
-                    message = "4" + ";" + clientIp + ";" + file;
+                    message = "4" + ";" + file + "$";
                     byte[] userRequestBytes = message.getBytes(StandardCharsets.UTF_8);
                     outputStream.write(userRequestBytes);
                     outputStream.flush();
@@ -56,7 +63,7 @@ public class Client {
                     // Add code for file download option
                     System.out.println("Enter the file name:");
                     String file = scanner.nextLine();
-                    message = "3" + ";" + clientIp + ";" + file;
+                    message = "3" + ";" + file + "$";
                     byte[] userRequestBytes = message.getBytes(StandardCharsets.UTF_8);
                     outputStream.write(userRequestBytes);
                     outputStream.flush();
@@ -65,6 +72,12 @@ public class Client {
                 } else {
                     System.out.println("Invalid choice. Try again.");
                 }
+                requestSemaphore.acquire();
+                // Clear the server info so new one can be sent
+                message = "5" + ";" + "$";
+                byte[] userRequestBytes = message.getBytes(StandardCharsets.UTF_8);
+                outputStream.write(userRequestBytes);
+
             }
             System.out.println("Closing connection.");
         } catch (IOException e) {
